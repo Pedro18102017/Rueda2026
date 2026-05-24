@@ -1,0 +1,2484 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUEDA DE PREGUNTAS 2026</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --panel-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            width: 100%;
+            max-width: 1100px;
+            flex-wrap: wrap;
+        }
+
+        /* Zona del Juego */
+        .game-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .wheel-box {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+        }
+
+        #arrow {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #1e293b;
+            z-index: 10;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+        }
+
+        /* Botones y Controles */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #spinBtn {
+            font-size: 1.4rem;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 50px;
+        }
+
+        .control-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-edit { background-color: #4b5563; }
+        .btn-save { background-color: var(--success-color); }
+        .btn-download { background-color: #9333ea; }
+
+        /* Modales / Ventanas Emergentes */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        /* Preguntas y Opciones */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            padding: 14px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        /* Panel de Edición */
+        .edit-panel {
+            display: none;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 30px;
+        }
+
+        .edit-section-block {
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #f9fafb;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="password"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .qa-edit-block {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .options-edit-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .option-edit-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="gameTitleDisplay">RUEDA DE PREGUNTAS 2026</h1>
+    </header>
+
+    <main class="main-container">
+        <!-- Panel del Juego -->
+        <div class="game-zone">
+            <div class="wheel-box">
+                <div id="arrow"></div>
+                <canvas id="wheelCanvas" width="500" height="500" style="transform: rotate(333.141deg); transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);"></canvas>
+            </div>
+            <button id="spinBtn" class="btn">¡INICIO!</button>
+
+            <div class="control-bar">
+                <button id="btnOpenEdit" class="btn btn-edit">Editar Juego</button>
+                <button id="btnDownload" class="btn btn-download">Descargar Juego</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Panel de Edición Avanzada (Aparece abajo al autenticarse) -->
+    <section id="editPanel" class="edit-panel" style="display: none;">
+        <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;">⚙️ Panel de Configuración Absoluta</h2>
+        
+        <div class="form-group" style="max-width: 400px;">
+            <label for="editGameTitle">Nombre Principal del Juego</label>
+            <input type="text" id="editGameTitle">
+        </div>
+
+        <div class="form-group" style="max-width: 400px;">
+            <label for="editPassword">Contraseña de Edición</label>
+            <input type="password" id="editPassword">
+        </div>
+
+        <h3>Configuración de Secciones y Preguntas</h3>
+        <div id="sectionsEditContainer"><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-1" value="I" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-1" value="#dc2626">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-1"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-1-0" value="¿Quién era el rey de España en 1810 y qué le había pasado?">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-0" checked="" value="0">
+                                <input type="text" id="opt-1-0-0" value="Fernando VII, y había sido tomado prisionero por Napoleón Bonaparte." placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-0" value="1">
+                                <input type="text" id="opt-1-0-1" value="Carlos IV, y se había ido de vacaciones a Francia." placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-0" value="2">
+                                <input type="text" id="opt-1-0-2" value="Manuel Belgrano, que quería gobernar Europa." placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-0" value="3">
+                                <input type="text" id="opt-1-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-0" value="4">
+                                <input type="text" id="opt-1-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-1-1" value="Pregunta Opcional 2 para la sección I">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-1" checked="" value="0">
+                                <input type="text" id="opt-1-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-1" value="1">
+                                <input type="text" id="opt-1-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-1" value="2">
+                                <input type="text" id="opt-1-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-1" value="3">
+                                <input type="text" id="opt-1-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-1" value="4">
+                                <input type="text" id="opt-1-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-1-2" value="Pregunta Opcional 3 para la sección I">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-2" checked="" value="0">
+                                <input type="text" id="opt-1-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-2" value="1">
+                                <input type="text" id="opt-1-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-2" value="2">
+                                <input type="text" id="opt-1-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-2" value="3">
+                                <input type="text" id="opt-1-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-2" value="4">
+                                <input type="text" id="opt-1-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-1-3" value="Pregunta Opcional 4 para la sección I">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-3" checked="" value="0">
+                                <input type="text" id="opt-1-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-3" value="1">
+                                <input type="text" id="opt-1-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-3" value="2">
+                                <input type="text" id="opt-1-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-3" value="3">
+                                <input type="text" id="opt-1-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-3" value="4">
+                                <input type="text" id="opt-1-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-1-4" value="Pregunta Opcional 5 para la sección I">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-4" checked="" value="0">
+                                <input type="text" id="opt-1-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-4" value="1">
+                                <input type="text" id="opt-1-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-4" value="2">
+                                <input type="text" id="opt-1-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-4" value="3">
+                                <input type="text" id="opt-1-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-1-4" value="4">
+                                <input type="text" id="opt-1-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-2" value="II" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-2" value="#f97316">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-2"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-2-0" value="Pregunta Opcional 1 para la sección II">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-0" checked="" value="0">
+                                <input type="text" id="opt-2-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-0" value="1">
+                                <input type="text" id="opt-2-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-0" value="2">
+                                <input type="text" id="opt-2-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-0" value="3">
+                                <input type="text" id="opt-2-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-0" value="4">
+                                <input type="text" id="opt-2-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-2-1" value="Pregunta Opcional 2 para la sección II">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-1" checked="" value="0">
+                                <input type="text" id="opt-2-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-1" value="1">
+                                <input type="text" id="opt-2-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-1" value="2">
+                                <input type="text" id="opt-2-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-1" value="3">
+                                <input type="text" id="opt-2-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-1" value="4">
+                                <input type="text" id="opt-2-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-2-2" value="Pregunta Opcional 3 para la sección II">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-2" checked="" value="0">
+                                <input type="text" id="opt-2-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-2" value="1">
+                                <input type="text" id="opt-2-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-2" value="2">
+                                <input type="text" id="opt-2-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-2" value="3">
+                                <input type="text" id="opt-2-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-2" value="4">
+                                <input type="text" id="opt-2-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-2-3" value="Pregunta Opcional 4 para la sección II">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-3" checked="" value="0">
+                                <input type="text" id="opt-2-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-3" value="1">
+                                <input type="text" id="opt-2-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-3" value="2">
+                                <input type="text" id="opt-2-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-3" value="3">
+                                <input type="text" id="opt-2-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-3" value="4">
+                                <input type="text" id="opt-2-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-2-4" value="Pregunta Opcional 5 para la sección II">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-4" checked="" value="0">
+                                <input type="text" id="opt-2-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-4" value="1">
+                                <input type="text" id="opt-2-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-4" value="2">
+                                <input type="text" id="opt-2-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-4" value="3">
+                                <input type="text" id="opt-2-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-2-4" value="4">
+                                <input type="text" id="opt-2-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-3" value="III" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-3" value="#78350f">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-3"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-3-0" value="Pregunta Opcional 1 para la sección III">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-0" checked="" value="0">
+                                <input type="text" id="opt-3-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-0" value="1">
+                                <input type="text" id="opt-3-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-0" value="2">
+                                <input type="text" id="opt-3-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-0" value="3">
+                                <input type="text" id="opt-3-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-0" value="4">
+                                <input type="text" id="opt-3-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-3-1" value="Pregunta Opcional 2 para la sección III">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-1" checked="" value="0">
+                                <input type="text" id="opt-3-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-1" value="1">
+                                <input type="text" id="opt-3-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-1" value="2">
+                                <input type="text" id="opt-3-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-1" value="3">
+                                <input type="text" id="opt-3-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-1" value="4">
+                                <input type="text" id="opt-3-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-3-2" value="Pregunta Opcional 3 para la sección III">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-2" checked="" value="0">
+                                <input type="text" id="opt-3-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-2" value="1">
+                                <input type="text" id="opt-3-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-2" value="2">
+                                <input type="text" id="opt-3-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-2" value="3">
+                                <input type="text" id="opt-3-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-2" value="4">
+                                <input type="text" id="opt-3-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-3-3" value="Pregunta Opcional 4 para la sección III">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-3" checked="" value="0">
+                                <input type="text" id="opt-3-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-3" value="1">
+                                <input type="text" id="opt-3-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-3" value="2">
+                                <input type="text" id="opt-3-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-3" value="3">
+                                <input type="text" id="opt-3-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-3" value="4">
+                                <input type="text" id="opt-3-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-3-4" value="Pregunta Opcional 5 para la sección III">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-4" checked="" value="0">
+                                <input type="text" id="opt-3-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-4" value="1">
+                                <input type="text" id="opt-3-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-4" value="2">
+                                <input type="text" id="opt-3-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-4" value="3">
+                                <input type="text" id="opt-3-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-3-4" value="4">
+                                <input type="text" id="opt-3-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-4" value="IV" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-4" value="#38bdf8">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-4"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-4-0" value="Pregunta Opcional 1 para la sección IV">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-0" checked="" value="0">
+                                <input type="text" id="opt-4-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-0" value="1">
+                                <input type="text" id="opt-4-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-0" value="2">
+                                <input type="text" id="opt-4-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-0" value="3">
+                                <input type="text" id="opt-4-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-0" value="4">
+                                <input type="text" id="opt-4-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-4-1" value="Pregunta Opcional 2 para la sección IV">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-1" checked="" value="0">
+                                <input type="text" id="opt-4-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-1" value="1">
+                                <input type="text" id="opt-4-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-1" value="2">
+                                <input type="text" id="opt-4-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-1" value="3">
+                                <input type="text" id="opt-4-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-1" value="4">
+                                <input type="text" id="opt-4-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-4-2" value="Pregunta Opcional 3 para la sección IV">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-2" checked="" value="0">
+                                <input type="text" id="opt-4-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-2" value="1">
+                                <input type="text" id="opt-4-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-2" value="2">
+                                <input type="text" id="opt-4-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-2" value="3">
+                                <input type="text" id="opt-4-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-2" value="4">
+                                <input type="text" id="opt-4-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-4-3" value="Pregunta Opcional 4 para la sección IV">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-3" checked="" value="0">
+                                <input type="text" id="opt-4-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-3" value="1">
+                                <input type="text" id="opt-4-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-3" value="2">
+                                <input type="text" id="opt-4-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-3" value="3">
+                                <input type="text" id="opt-4-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-3" value="4">
+                                <input type="text" id="opt-4-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-4-4" value="Pregunta Opcional 5 para la sección IV">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-4" checked="" value="0">
+                                <input type="text" id="opt-4-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-4" value="1">
+                                <input type="text" id="opt-4-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-4" value="2">
+                                <input type="text" id="opt-4-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-4" value="3">
+                                <input type="text" id="opt-4-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-4-4" value="4">
+                                <input type="text" id="opt-4-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-5" value="V" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-5" value="#8b5cf6">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-5"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-5-0" value="Pregunta Opcional 1 para la sección V">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-0" checked="" value="0">
+                                <input type="text" id="opt-5-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-0" value="1">
+                                <input type="text" id="opt-5-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-0" value="2">
+                                <input type="text" id="opt-5-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-0" value="3">
+                                <input type="text" id="opt-5-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-0" value="4">
+                                <input type="text" id="opt-5-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-5-1" value="Pregunta Opcional 2 para la sección V">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-1" checked="" value="0">
+                                <input type="text" id="opt-5-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-1" value="1">
+                                <input type="text" id="opt-5-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-1" value="2">
+                                <input type="text" id="opt-5-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-1" value="3">
+                                <input type="text" id="opt-5-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-1" value="4">
+                                <input type="text" id="opt-5-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-5-2" value="Pregunta Opcional 3 para la sección V">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-2" checked="" value="0">
+                                <input type="text" id="opt-5-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-2" value="1">
+                                <input type="text" id="opt-5-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-2" value="2">
+                                <input type="text" id="opt-5-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-2" value="3">
+                                <input type="text" id="opt-5-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-2" value="4">
+                                <input type="text" id="opt-5-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-5-3" value="Pregunta Opcional 4 para la sección V">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-3" checked="" value="0">
+                                <input type="text" id="opt-5-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-3" value="1">
+                                <input type="text" id="opt-5-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-3" value="2">
+                                <input type="text" id="opt-5-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-3" value="3">
+                                <input type="text" id="opt-5-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-3" value="4">
+                                <input type="text" id="opt-5-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-5-4" value="Pregunta Opcional 5 para la sección V">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-4" checked="" value="0">
+                                <input type="text" id="opt-5-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-4" value="1">
+                                <input type="text" id="opt-5-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-4" value="2">
+                                <input type="text" id="opt-5-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-4" value="3">
+                                <input type="text" id="opt-5-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-5-4" value="4">
+                                <input type="text" id="opt-5-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-6" value="VI" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-6" value="#eab308">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-6"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-6-0" value="Pregunta Opcional 1 para la sección VI">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-0" checked="" value="0">
+                                <input type="text" id="opt-6-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-0" value="1">
+                                <input type="text" id="opt-6-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-0" value="2">
+                                <input type="text" id="opt-6-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-0" value="3">
+                                <input type="text" id="opt-6-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-0" value="4">
+                                <input type="text" id="opt-6-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-6-1" value="Pregunta Opcional 2 para la sección VI">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-1" checked="" value="0">
+                                <input type="text" id="opt-6-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-1" value="1">
+                                <input type="text" id="opt-6-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-1" value="2">
+                                <input type="text" id="opt-6-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-1" value="3">
+                                <input type="text" id="opt-6-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-1" value="4">
+                                <input type="text" id="opt-6-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-6-2" value="Pregunta Opcional 3 para la sección VI">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-2" checked="" value="0">
+                                <input type="text" id="opt-6-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-2" value="1">
+                                <input type="text" id="opt-6-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-2" value="2">
+                                <input type="text" id="opt-6-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-2" value="3">
+                                <input type="text" id="opt-6-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-2" value="4">
+                                <input type="text" id="opt-6-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-6-3" value="Pregunta Opcional 4 para la sección VI">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-3" checked="" value="0">
+                                <input type="text" id="opt-6-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-3" value="1">
+                                <input type="text" id="opt-6-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-3" value="2">
+                                <input type="text" id="opt-6-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-3" value="3">
+                                <input type="text" id="opt-6-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-3" value="4">
+                                <input type="text" id="opt-6-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-6-4" value="Pregunta Opcional 5 para la sección VI">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-4" checked="" value="0">
+                                <input type="text" id="opt-6-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-4" value="1">
+                                <input type="text" id="opt-6-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-4" value="2">
+                                <input type="text" id="opt-6-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-4" value="3">
+                                <input type="text" id="opt-6-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-6-4" value="4">
+                                <input type="text" id="opt-6-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-7" value="VII" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-7" value="#22c55e">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-7"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-7-0" value="Pregunta Opcional 1 para la sección VII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-0" checked="" value="0">
+                                <input type="text" id="opt-7-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-0" value="1">
+                                <input type="text" id="opt-7-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-0" value="2">
+                                <input type="text" id="opt-7-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-0" value="3">
+                                <input type="text" id="opt-7-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-0" value="4">
+                                <input type="text" id="opt-7-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-7-1" value="Pregunta Opcional 2 para la sección VII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-1" checked="" value="0">
+                                <input type="text" id="opt-7-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-1" value="1">
+                                <input type="text" id="opt-7-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-1" value="2">
+                                <input type="text" id="opt-7-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-1" value="3">
+                                <input type="text" id="opt-7-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-1" value="4">
+                                <input type="text" id="opt-7-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-7-2" value="Pregunta Opcional 3 para la sección VII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-2" checked="" value="0">
+                                <input type="text" id="opt-7-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-2" value="1">
+                                <input type="text" id="opt-7-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-2" value="2">
+                                <input type="text" id="opt-7-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-2" value="3">
+                                <input type="text" id="opt-7-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-2" value="4">
+                                <input type="text" id="opt-7-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-7-3" value="Pregunta Opcional 4 para la sección VII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-3" checked="" value="0">
+                                <input type="text" id="opt-7-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-3" value="1">
+                                <input type="text" id="opt-7-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-3" value="2">
+                                <input type="text" id="opt-7-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-3" value="3">
+                                <input type="text" id="opt-7-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-3" value="4">
+                                <input type="text" id="opt-7-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-7-4" value="Pregunta Opcional 5 para la sección VII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-4" checked="" value="0">
+                                <input type="text" id="opt-7-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-4" value="1">
+                                <input type="text" id="opt-7-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-4" value="2">
+                                <input type="text" id="opt-7-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-4" value="3">
+                                <input type="text" id="opt-7-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-7-4" value="4">
+                                <input type="text" id="opt-7-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-8" value="VIII" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-8" value="#2563eb">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-8"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-8-0" value="Pregunta Opcional 1 para la sección VIII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-0" checked="" value="0">
+                                <input type="text" id="opt-8-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-0" value="1">
+                                <input type="text" id="opt-8-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-0" value="2">
+                                <input type="text" id="opt-8-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-0" value="3">
+                                <input type="text" id="opt-8-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-0" value="4">
+                                <input type="text" id="opt-8-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-8-1" value="Pregunta Opcional 2 para la sección VIII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-1" checked="" value="0">
+                                <input type="text" id="opt-8-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-1" value="1">
+                                <input type="text" id="opt-8-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-1" value="2">
+                                <input type="text" id="opt-8-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-1" value="3">
+                                <input type="text" id="opt-8-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-1" value="4">
+                                <input type="text" id="opt-8-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-8-2" value="Pregunta Opcional 3 para la sección VIII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-2" checked="" value="0">
+                                <input type="text" id="opt-8-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-2" value="1">
+                                <input type="text" id="opt-8-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-2" value="2">
+                                <input type="text" id="opt-8-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-2" value="3">
+                                <input type="text" id="opt-8-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-2" value="4">
+                                <input type="text" id="opt-8-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-8-3" value="Pregunta Opcional 4 para la sección VIII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-3" checked="" value="0">
+                                <input type="text" id="opt-8-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-3" value="1">
+                                <input type="text" id="opt-8-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-3" value="2">
+                                <input type="text" id="opt-8-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-3" value="3">
+                                <input type="text" id="opt-8-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-3" value="4">
+                                <input type="text" id="opt-8-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-8-4" value="Pregunta Opcional 5 para la sección VIII">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-4" checked="" value="0">
+                                <input type="text" id="opt-8-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-4" value="1">
+                                <input type="text" id="opt-8-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-4" value="2">
+                                <input type="text" id="opt-8-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-4" value="3">
+                                <input type="text" id="opt-8-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-8-4" value="4">
+                                <input type="text" id="opt-8-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-9" value="IX" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-9" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-9"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-9-0" value="Pregunta Opcional 1 para la sección IX">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-0" checked="" value="0">
+                                <input type="text" id="opt-9-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-0" value="1">
+                                <input type="text" id="opt-9-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-0" value="2">
+                                <input type="text" id="opt-9-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-0" value="3">
+                                <input type="text" id="opt-9-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-0" value="4">
+                                <input type="text" id="opt-9-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-9-1" value="Pregunta Opcional 2 para la sección IX">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-1" checked="" value="0">
+                                <input type="text" id="opt-9-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-1" value="1">
+                                <input type="text" id="opt-9-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-1" value="2">
+                                <input type="text" id="opt-9-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-1" value="3">
+                                <input type="text" id="opt-9-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-1" value="4">
+                                <input type="text" id="opt-9-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-9-2" value="Pregunta Opcional 3 para la sección IX">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-2" checked="" value="0">
+                                <input type="text" id="opt-9-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-2" value="1">
+                                <input type="text" id="opt-9-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-2" value="2">
+                                <input type="text" id="opt-9-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-2" value="3">
+                                <input type="text" id="opt-9-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-2" value="4">
+                                <input type="text" id="opt-9-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-9-3" value="Pregunta Opcional 4 para la sección IX">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-3" checked="" value="0">
+                                <input type="text" id="opt-9-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-3" value="1">
+                                <input type="text" id="opt-9-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-3" value="2">
+                                <input type="text" id="opt-9-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-3" value="3">
+                                <input type="text" id="opt-9-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-3" value="4">
+                                <input type="text" id="opt-9-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-9-4" value="Pregunta Opcional 5 para la sección IX">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-4" checked="" value="0">
+                                <input type="text" id="opt-9-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-4" value="1">
+                                <input type="text" id="opt-9-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-4" value="2">
+                                <input type="text" id="opt-9-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-4" value="3">
+                                <input type="text" id="opt-9-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-9-4" value="4">
+                                <input type="text" id="opt-9-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div><div class="edit-section-block">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-10" value="X" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-10" value="#000000">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-10"><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 1</label>
+                            <input type="text" id="qText-10-0" value="Pregunta Opcional 1 para la sección X">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-0" checked="" value="0">
+                                <input type="text" id="opt-10-0-0" value="Opción A de la pregunta 1" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-0" value="1">
+                                <input type="text" id="opt-10-0-1" value="Opción B de la pregunta 1" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-0" value="2">
+                                <input type="text" id="opt-10-0-2" value="Opción C de la pregunta 1" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-0" value="3">
+                                <input type="text" id="opt-10-0-3" value="Opción D de la pregunta 1" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-0" value="4">
+                                <input type="text" id="opt-10-0-4" value="Opción E de la pregunta 1" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 2</label>
+                            <input type="text" id="qText-10-1" value="Pregunta Opcional 2 para la sección X">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-1" checked="" value="0">
+                                <input type="text" id="opt-10-1-0" value="Opción A de la pregunta 2" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-1" value="1">
+                                <input type="text" id="opt-10-1-1" value="Opción B de la pregunta 2" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-1" value="2">
+                                <input type="text" id="opt-10-1-2" value="Opción C de la pregunta 2" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-1" value="3">
+                                <input type="text" id="opt-10-1-3" value="Opción D de la pregunta 2" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-1" value="4">
+                                <input type="text" id="opt-10-1-4" value="Opción E de la pregunta 2" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 3</label>
+                            <input type="text" id="qText-10-2" value="Pregunta Opcional 3 para la sección X">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-2" checked="" value="0">
+                                <input type="text" id="opt-10-2-0" value="Opción A de la pregunta 3" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-2" value="1">
+                                <input type="text" id="opt-10-2-1" value="Opción B de la pregunta 3" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-2" value="2">
+                                <input type="text" id="opt-10-2-2" value="Opción C de la pregunta 3" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-2" value="3">
+                                <input type="text" id="opt-10-2-3" value="Opción D de la pregunta 3" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-2" value="4">
+                                <input type="text" id="opt-10-2-4" value="Opción E de la pregunta 3" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 4</label>
+                            <input type="text" id="qText-10-3" value="Pregunta Opcional 4 para la sección X">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-3" checked="" value="0">
+                                <input type="text" id="opt-10-3-0" value="Opción A de la pregunta 4" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-3" value="1">
+                                <input type="text" id="opt-10-3-1" value="Opción B de la pregunta 4" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-3" value="2">
+                                <input type="text" id="opt-10-3-2" value="Opción C de la pregunta 4" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-3" value="3">
+                                <input type="text" id="opt-10-3-3" value="Opción D de la pregunta 4" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-3" value="4">
+                                <input type="text" id="opt-10-3-4" value="Opción E de la pregunta 4" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div><div class="qa-edit-block">
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° 5</label>
+                            <input type="text" id="qText-10-4" value="Pregunta Opcional 5 para la sección X">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-4" checked="" value="0">
+                                <input type="text" id="opt-10-4-0" value="Opción A de la pregunta 5" placeholder="Opción A">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-4" value="1">
+                                <input type="text" id="opt-10-4-1" value="Opción B de la pregunta 5" placeholder="Opción B">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-4" value="2">
+                                <input type="text" id="opt-10-4-2" value="Opción C de la pregunta 5" placeholder="Opción C">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-4" value="3">
+                                <input type="text" id="opt-10-4-3" value="Opción D de la pregunta 5" placeholder="Opción D">
+                            </div>
+                        
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-10-4" value="4">
+                                <input type="text" id="opt-10-4-4" value="Opción E de la pregunta 5" placeholder="Opción E">
+                            </div>
+                        
+                        </div>
+                    </div></div>
+                </div></div>
+
+        <div class="control-bar" style="justify-content: flex-start; margin-top: 20px;">
+            <button id="btnSaveConfig" class="btn btn-save">Guardar Configuración</button>
+        </div>
+    </section>
+
+    <!-- Ventana de Preguntas -->
+    <div id="questionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal" id="closeQuestionModal">×</span>
+            <h2 id="modalSectionTitle" style="color: var(--primary-color); margin-bottom: 5px;">Sección: IX</h2>
+            <h3 id="modalQuestionText" style="margin-bottom: 20px; font-weight: 600;">Pregunta Opcional 1 para la sección IX</h3>
+            <div class="options-container" id="modalOptionsContainer"><button class="option-btn">Opción A de la pregunta 1</button><button class="option-btn">Opción B de la pregunta 1</button><button class="option-btn">Opción C de la pregunta 1</button><button class="option-btn">Opción D de la pregunta 1</button><button class="option-btn">Opción E de la pregunta 1</button></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATOS INICIALES POR DEFECTO ---
+        const defaultData = {
+            title: "RUEDA DE PREGUNTAS 2026",
+            password: "1234",
+            spinText: "¡INICIO!",
+            sections: [
+                { id: 1, name: "I", color: "#dc2626" },
+                { id: 2, name: "II", color: "#f97316" },
+                { id: 3, name: "III", color: "#78350f" },
+                { id: 4, name: "IV", color: "#38bdf8" },
+                { id: 5, name: "V", color: "#8b5cf6" },
+                { id: 6, name: "VI", color: "#eab308" },
+                { id: 7, name: "VII", color: "#22c55e" },
+                { id: 8, name: "VIII", color: "#2563eb" },
+                { id: 9, name: "IX", color: "#ffffff" },
+                { id: 10, name: "X", color: "#000000" }
+            ],
+            questions: {}
+        };
+
+        // Población automática de 5 preguntas por cada una de las 10 secciones
+        defaultData.sections.forEach(sec => {
+            defaultData.questions[sec.id] = [];
+            for (let q = 1; q <= 5; q++) {
+                defaultData.questions[sec.id].push({
+                    text: `Pregunta Opcional ${q} para la sección ${sec.name}`,
+                    options: [
+                        `Opción A de la pregunta ${q}`,
+                        `Opción B de la pregunta ${q}`,
+                        `Opción C de la pregunta ${q}`,
+                        `Opción D de la pregunta ${q}`,
+                        `Opción E de la pregunta ${q}`
+                    ],
+                    correct: 0 // Índice de la respuesta correcta por defecto (0 = Opción A)
+                });
+            }
+        });
+
+        // Estado dinámico del juego cargado desde LocalStorage o por defecto
+        let gameState = {"title":"RUEDA DE PREGUNTAS 2026","password":"Xx6sd62Vf9&@","spinText":"¡INICIO!","sections":[{"id":1,"name":"I","color":"#dc2626"},{"id":2,"name":"II","color":"#f97316"},{"id":3,"name":"III","color":"#78350f"},{"id":4,"name":"IV","color":"#38bdf8"},{"id":5,"name":"V","color":"#8b5cf6"},{"id":6,"name":"VI","color":"#eab308"},{"id":7,"name":"VII","color":"#22c55e"},{"id":8,"name":"VIII","color":"#2563eb"},{"id":9,"name":"IX","color":"#ffffff"},{"id":10,"name":"X","color":"#000000"}],"questions":{"1":[{"text":"¿Quién era el rey de España en 1810 y qué le había pasado?","options":["Fernando VII, y había sido tomado prisionero por Napoleón Bonaparte.","Carlos IV, y se había ido de vacaciones a Francia.","Manuel Belgrano, que quería gobernar Europa.","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección I","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección I","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección I","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección I","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"2":[{"text":"Pregunta Opcional 1 para la sección II","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección II","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección II","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección II","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección II","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"3":[{"text":"Pregunta Opcional 1 para la sección III","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección III","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección III","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección III","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección III","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"4":[{"text":"Pregunta Opcional 1 para la sección IV","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección IV","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección IV","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección IV","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección IV","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"5":[{"text":"Pregunta Opcional 1 para la sección V","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección V","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección V","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección V","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección V","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"6":[{"text":"Pregunta Opcional 1 para la sección VI","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección VI","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección VI","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección VI","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección VI","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"7":[{"text":"Pregunta Opcional 1 para la sección VII","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección VII","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección VII","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección VII","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección VII","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"8":[{"text":"Pregunta Opcional 1 para la sección VIII","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección VIII","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección VIII","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección VIII","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección VIII","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"9":[{"text":"Pregunta Opcional 1 para la sección IX","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección IX","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección IX","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección IX","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección IX","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}],"10":[{"text":"Pregunta Opcional 1 para la sección X","options":["Opción A de la pregunta 1","Opción B de la pregunta 1","Opción C de la pregunta 1","Opción D de la pregunta 1","Opción E de la pregunta 1"],"correct":0},{"text":"Pregunta Opcional 2 para la sección X","options":["Opción A de la pregunta 2","Opción B de la pregunta 2","Opción C de la pregunta 2","Opción D de la pregunta 2","Opción E de la pregunta 2"],"correct":0},{"text":"Pregunta Opcional 3 para la sección X","options":["Opción A de la pregunta 3","Opción B de la pregunta 3","Opción C de la pregunta 3","Opción D de la pregunta 3","Opción E de la pregunta 3"],"correct":0},{"text":"Pregunta Opcional 4 para la sección X","options":["Opción A de la pregunta 4","Opción B de la pregunta 4","Opción C de la pregunta 4","Opción D de la pregunta 4","Opción E de la pregunta 4"],"correct":0},{"text":"Pregunta Opcional 5 para la sección X","options":["Opción A de la pregunta 5","Opción B de la pregunta 5","Opción C de la pregunta 5","Opción D de la pregunta 5","Opción E de la pregunta 5"],"correct":0}]}};
+
+        // --- MOTOR DE LA RUEDA (CANVAS) ---
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const numSegments = 10;
+        const segmentAngle = (2 * Math.PI) / numSegments; // 36 grados exactos
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            const size = canvas.width;
+            const center = size / 2;
+            const radius = center - 10;
+
+            ctx.clearRect(0, 0, size, size);
+
+            gameState.sections.forEach((sec, index) => {
+                const startAngle = index * segmentAngle + currentRotation;
+                const endAngle = startAngle + segmentAngle;
+
+                // Dibujar Porción Radial
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = sec.color;
+                ctx.fill();
+                ctx.stroke();
+
+                // Dibujar el Texto / Identificador de Sección
+                ctx.save();
+                ctx.translate(center, center);
+                ctx.rotate(startAngle + segmentAngle / 2);
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                
+                // Contraste inteligente para texto sobre fondos claros u oscuros
+                ctx.fillStyle = (sec.color === "#ffffff" || sec.color === "#eab308" || sec.color === "#38bdf8") ? "#000000" : "#ffffff";
+                ctx.font = "bold 20px sans-serif";
+                ctx.fillText(sec.name, radius - 30, 0);
+                ctx.restore();
+            });
+
+            // Eje central decorativo
+            ctx.beginPath();
+            ctx.arc(center, center, 25, 0, 2 * Math.PI);
+            ctx.fillStyle = "#1e293b";
+            ctx.fill();
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // --- SISTEMA DE GIRO CON CÁLCULO DE ÁNGULO ---
+        document.getElementById('spinBtn').addEventListener('click', () => {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const extraSpins = Math.floor(Math.random() * 5) + 5; // Entre 5 y 10 vueltas completas
+            const targetAngle = Math.random() * (2 * Math.PI); // Punto de parada aleatorio
+            const totalRotation = extraSpins * 2 * Math.PI + targetAngle;
+            
+            const canvasElement = document.getElementById('wheelCanvas');
+            canvasElement.style.transform = `rotate(${totalRotation * (180 / Math.PI)}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                
+                // Normalizar ángulo final relativo al puntero superior (-90 grados en geometría estándar)
+                const normalizedAngle = (2 * Math.PI - (totalRotation % (2 * Math.PI)) + (3 * Math.PI / 2)) % (2 * Math.PI);
+                const selectedIndex = Math.floor(normalizedAngle / segmentAngle) % numSegments;
+                
+                triggerQuestion(gameState.sections[selectedIndex]);
+                
+                // Guardar la rotación estática del canvas internamente sin romper animaciones CSS futuras
+                currentRotation = totalRotation % (2 * Math.PI);
+                canvasElement.style.transition = 'none';
+                canvasElement.style.transform = `rotate(${currentRotation * (180 / Math.PI)}deg)`;
+                setTimeout(() => canvasElement.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)', 50);
+
+            }, 4000); // Sincronizado con la duración de la transición CSS
+        });
+
+        // --- DESPLIEGUE DE PREGUNTAS ---
+        function triggerQuestion(section) {
+            const sectionQuestions = gameState.questions[section.id];
+            // Selección aleatoria de una de las 5 preguntas configuradas para la sección
+            const randomQuestion = sectionQuestions[Math.floor(Math.random() * sectionQuestions.length)];
+
+            document.getElementById('modalSectionTitle').innerText = `Sección: ${section.name}`;
+            document.getElementById('modalQuestionText').innerText = randomQuestion.text;
+            
+            const container = document.getElementById('modalOptionsContainer');
+            container.innerHTML = '';
+
+            randomQuestion.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if (idx === randomQuestion.correct) {
+                        btn.style.backgroundColor = '#bbf7d0';
+                        btn.style.borderColor = 'var(--success-color)';
+                        alert('¡Respuesta Correcta!');
+                    } else {
+                        btn.style.backgroundColor = '#fecaca';
+                        btn.style.borderColor = 'var(--danger-color)';
+                        alert('Respuesta incorrecta.');
+                    }
+                    document.getElementById('questionModal').style.display = 'none';
+                };
+                container.appendChild(btn);
+            });
+
+            document.getElementById('questionModal').style.display = 'flex';
+        }
+
+        // --- SISTEMA DE AUTENTICACIÓN Y EDICIÓN ---
+        document.getElementById('btnOpenEdit').addEventListener('click', () => {
+            const panel = document.getElementById('editPanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+                return;
+            }
+
+            const pass = prompt("Ingrese la contraseña de edición configurada:");
+            if (pass === gameState.password) {
+                buildEditorForm();
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert("Contraseña incorrecta. Acceso denegado.");
+            }
+        });
+
+        function buildEditorForm() {
+            document.getElementById('editGameTitle').value = gameState.title;
+            document.getElementById('editPassword').value = gameState.password;
+            
+            const container = document.getElementById('sectionsEditContainer');
+            container.innerHTML = '';
+
+            gameState.sections.forEach(sec => {
+                const secBlock = document.createElement('div');
+                secBlock.className = 'edit-section-block';
+                secBlock.innerHTML = `
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Nombre de la Sección</label>
+                            <input type="text" id="secName-${sec.id}" value="${sec.name}" style="width:120px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Color de Fondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="secColor-${sec.id}" value="${sec.color}">
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin-top:10px; color:#4b5563;">Preguntas de la sección (Máximo 5)</h4>
+                    <div id="qaContainer-${sec.id}"></div>
+                `;
+                container.appendChild(secBlock);
+
+                // Insertar los bloques de edición de preguntas asociados
+                const qaContainer = document.getElementById(`qaContainer-${sec.id}`);
+                gameState.questions[sec.id].forEach((q, qIdx) => {
+                    const qBlock = document.createElement('div');
+                    qBlock.className = 'qa-edit-block';
+                    
+                    let optionsHTML = '';
+                    q.options.forEach((opt, oIdx) => {
+                        optionsHTML += `
+                            <div class="option-edit-row">
+                                <input type="radio" name="correct-${sec.id}-${qIdx}" ${q.correct === oIdx ? 'checked' : ''} value="${oIdx}">
+                                <input type="text" id="opt-${sec.id}-${qIdx}-${oIdx}" value="${opt}" placeholder="Opción ${String.fromCharCode(65 + oIdx)}">
+                            </div>
+                        `;
+                    });
+
+                    qBlock.innerHTML = `
+                        <div class="form-group">
+                            <label style="color:var(--primary-color)">Pregunta N° ${qIdx + 1}</label>
+                            <input type="text" id="qText-${sec.id}-${qIdx}" value="${q.text}">
+                        </div>
+                        <label style="font-size:0.8rem; color:#6b7280;">Seleccione el botón circular al lado de la respuesta correcta:</label>
+                        <div class="options-edit-grid">
+                            ${optionsHTML}
+                        </div>
+                    `;
+                    qaContainer.appendChild(qBlock);
+                });
+            });
+        }
+
+        // --- GUARDAR CONFIGURACIÓN ---
+        document.getElementById('btnSaveConfig').addEventListener('click', () => {
+            gameState.title = document.getElementById('editGameTitle').value;
+            gameState.password = document.getElementById('editPassword').value;
+            
+            document.getElementById('gameTitleDisplay').innerText = gameState.title;
+
+            gameState.sections.forEach(sec => {
+                sec.name = document.getElementById(`secName-${sec.id}`).value;
+                sec.color = document.getElementById(`secColor-${sec.id}`).value;
+
+                gameState.questions[sec.id].forEach((q, qIdx) => {
+                    q.text = document.getElementById(`qText-${sec.id}-${qIdx}`).value;
+                    
+                    const selectedCorrect = document.querySelector(`input[name="correct-${sec.id}-${qIdx}"]:checked`);
+                    if (selectedCorrect) {
+                        q.correct = parseInt(selectedCorrect.value);
+                    }
+
+                    for (let oIdx = 0; oIdx < 5; oIdx++) {
+                        q.options[oIdx] = document.getElementById(`opt-${sec.id}-${qIdx}-${oIdx}`).value;
+                    }
+                });
+            });
+
+            localStorage.setItem('wheel_game_state_2026', JSON.stringify(gameState));
+            drawWheel();
+            alert("¡Toda la configuración ha sido guardada en la memoria local del navegador!");
+            document.getElementById('editPanel').style.display = 'none';
+        });
+
+        // --- SISTEMA DE DESCARGA AUTO-EMPAQUETABLE ---
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            // Convierte el estado actual a un String limpio
+            const stateString = JSON.stringify(gameState);
+            
+            // Captura el HTML completo del documento actual
+            let currentHTML = document.documentElement.outerHTML;
+            
+            // Reemplaza la inicialización por defecto con la configuración actual modificada en caliente
+            const stateRegex = /let gameState = JSON\.parse\(localStorage\.getItem\('wheel_game_state_2026'\)\) \|\| defaultData;/;
+            const replacementCode = `let gameState = ${stateString};`;
+            currentHTML = currentHTML.replace(stateRegex, replacementCode);
+
+            // Generación de un blob de descarga binaria independiente del navegador
+            const blob = new Blob(["<!DOCTYPE html>\n" + currentHTML], { type: "text/html;charset=utf-8" });
+            const tempAnchor = document.createElement("a");
+            tempAnchor.href = URL.createObjectURL(blob);
+            tempAnchor.download = `${gameState.title.replace(/\s+/g, '_')}_offline.html`;
+            
+            document.body.appendChild(tempAnchor);
+            tempAnchor.click();
+            document.body.removeChild(tempAnchor);
+        });
+
+        // Cierre de modales básicos
+        document.getElementById('closeQuestionModal').onclick = () => {
+            document.getElementById('questionModal').style.display = 'none';
+        };
+
+        // Renderizado inicial en el arranque
+        document.getElementById('gameTitleDisplay').innerText = gameState.title;
+        drawWheel();
+    </script>
+
+</body></html>
